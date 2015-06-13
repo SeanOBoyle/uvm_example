@@ -1,0 +1,108 @@
+# SimVision Command Script (Fri Jun 12 08:53:23 PM PDT 2015)
+#
+# Version 14.10.s013
+#
+# You can restore this configuration with:
+#
+#     simvision -input /mnt/hgfs/Work/dvt_workspace_vm/uvm_example/verif/tool_setup/make/waves.svcf
+#
+
+
+#
+# Preferences
+#
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set cursorctl-dont-show-sync-warning 1
+preferences set toolbar-Standard-Console {
+  usual
+  position -pos 1
+}
+preferences set toolbar-Search-Console {
+  usual
+  position -pos 2
+}
+preferences set plugin-enable-svdatabrowser 0
+preferences set plugin-enable-groupscope 0
+preferences set sb-display-values 1
+preferences set plugin-enable-interleaveandcompare 0
+preferences set waveform-operation-mode zoom
+preferences set whats-new-dont-show-at-startup 1
+
+#
+# Groups
+#
+catch {group new -name dut -overlay 0}
+catch {group new -name host_if -overlay 0}
+
+group using dut
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {[format {tb_top.u_dut.reset_n_i}]} ] \
+    [subst  {[format {tb_top.u_dut.host_clk_i}]} ] \
+    [subst  {[format {tb_top.u_dut.host_sel_i}]} ] \
+    [subst  {[format {tb_top.u_dut.host_wr_i}]} ] \
+    [subst  {[format {tb_top.u_dut.host_addr_i[3:0]}]} ] \
+    [subst  {[format {tb_top.u_dut.host_wdata_i[7:0]}]} ] \
+    [subst  {[format {tb_top.u_dut.host_rdata_o[7:0]}]} ] \
+    [subst  {[format {tb_top.u_dut.memory_q[15:0]}]} ]
+
+group using host_if
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    [subst  {[format {tb_top.u_host_if.sel}]} ] \
+    [subst  {[format {tb_top.u_host_if.wr}]} ] \
+    [subst  {[format {tb_top.u_host_if.addr[3:0]}]} ] \
+    [subst  {[format {tb_top.u_host_if.wdata[7:0]}]} ] \
+    [subst  {[format {tb_top.u_host_if.rdata[7:0]}]} ]
+
+#
+# Mnemonic Maps
+#
+mmap new -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1165x480+83+55}] != ""} {
+    window geometry "Waveform 1" 1165x480+83+55
+}
+window target "Waveform 1" on
+waveform using {Waveform 1}
+waveform sidebar visibility partial
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 175 \
+    -units ns \
+    -valuewidth 75
+waveform baseline set -time 0
+
+
+set groupId0 [waveform add -groups dut]
+
+
+set groupId0 [waveform add -groups host_if]
+
+
+waveform xview limits 0 2000ns
+
+#
+# Waveform Window Links
+#
+
+#
+# Console windows
+#
+console set -windowname Console
+window geometry Console 600x250+2+51
